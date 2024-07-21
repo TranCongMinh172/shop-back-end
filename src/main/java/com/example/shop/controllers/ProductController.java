@@ -39,11 +39,11 @@ public class ProductController {
         );
     }
     @GetMapping("/{id}")
-    public ResponseSuccess<?> getProductById(@PathVariable Long id) {
+    public ResponseSuccess<?> getProductById(@PathVariable Long id) throws DataNotFoundException {
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),
                 "get product with id "+id+"successfully",
-                productService.findById(id)
+                productService.findProductById(id)
         );
     }
     @PutMapping("/{id}")

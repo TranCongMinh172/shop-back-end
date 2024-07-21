@@ -3,6 +3,7 @@ package com.example.shop.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 @Entity
 @Table(name = "tokens")
@@ -18,7 +19,7 @@ public class Token {
     private Long id;
     private String accessToken;
     private String refreshToken;
-    private Date expiredDate;
+    private LocalDateTime expiredDate;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

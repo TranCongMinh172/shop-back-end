@@ -20,13 +20,11 @@ import java.util.List;
 public class ProductDto  {
     @NotBlank(message = "Product name must not be blank")
     private String productName;
-    @NotBlank(message = "Product description must not be blank")
     private String productDescription;
     @NotNull(message = "Product price must not be null")
     private Double productPrice;
     private Integer thumbnail;
     @NotNull(message = "Product status must not be null")
-    private Status status;
     private Long  categoryId;
     private Long  providerId;
     private List<MultipartFile> images;

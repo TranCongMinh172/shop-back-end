@@ -9,11 +9,12 @@ public class VoucherMapper {
     public Voucher addVoucherDto(VoucherDto voucherDto){
         return Voucher.builder()
                 .maxPrice(voucherDto.getMaxPrice())
-                .minPrice(voucherDto.getMinPrice())
+                .minAmount(voucherDto.getMinPrice())
                 .discount(voucherDto.getDiscount())
                 .quantity(voucherDto.getQuantity())
                 .expiredDate(voucherDto.getExpiredDate())
                 .type(voucherDto.getType())
+                .scope(voucherDto.getScope())
                 .build();
     }
 }

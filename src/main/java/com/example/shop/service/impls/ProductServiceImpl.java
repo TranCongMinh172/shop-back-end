@@ -1,11 +1,14 @@
 package com.example.shop.service.impls;
 
 import com.example.shop.dto.requests.ProductDto;
+import com.example.shop.dto.responses.ProductResponse;
 import com.example.shop.exceptions.DataExistsException;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.ProductMapper;
 import com.example.shop.models.Product;
+import com.example.shop.models.ProductDetail;
 import com.example.shop.models.ProductImage;
+import com.example.shop.repositories.ProductDetailRepository;
 import com.example.shop.repositories.ProductImageRepository;
 import com.example.shop.repositories.ProductRepository;
 import com.example.shop.service.interfaces.ProductService;
@@ -26,6 +29,7 @@ public class ProductServiceImpl extends BaseServiceImpl<Product,Long> implements
     private ProductRepository productRepository;
     private ProductImageRepository productImageRepository;
     private S3Upload s3Upload;
+    private ProductDetailRepository productDetailRepository;
     public ProductServiceImpl(JpaRepository<Product, Long> repository) {
         super(repository);
     }
@@ -45,6 +49,10 @@ public class ProductServiceImpl extends BaseServiceImpl<Product,Long> implements
     @Autowired
     public void setS3Upload(S3Upload s3Upload) {
         this.s3Upload = s3Upload;
+    }
+    @Autowired
+    public void setProductDetailRepository(ProductDetailRepository productDetailRepository) {
+        this.productDetailRepository = productDetailRepository;
     }
 
     @Override
@@ -77,6 +85,19 @@ public class ProductServiceImpl extends BaseServiceImpl<Product,Long> implements
             }
         }
         return super.save(product);
+    }
+
+    @Override
+    public ProductResponse findProductById(Long id) throws DataNotFoundException{
+        Product product = super.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("product not found"));
+        List<ProductDetail> productDetails = productDetailRepository.findByProductId(id);
+        List<ProductImage> productImages = productImageRepository.findByProductId(id);
+        return ProductResponse.builder()
+                .product(product)
+                .productDetails(productDetails)
+                .productImages(productImages)
+                .build();
     }
 
 }

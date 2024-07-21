@@ -6,6 +6,7 @@ import com.example.shop.models.enums.StatusOrder;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 @Entity
 @Table(name = "orders")
@@ -21,17 +22,17 @@ public class Order extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    private Date orderDate;
+    private LocalDateTime orderDate;
     private StatusOrder status;
     private String note;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
     private String phone;
     private String buyerName;
     private PaymentMethod paymentMethod;
     private DeliveryMethod deliveryMethod;
-    private Double original_amount;
+    private Double originalAmount;
     private Double discountedPrice;
     private Double discountedAmount;
     private Double deliveryAmount;

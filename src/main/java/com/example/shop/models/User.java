@@ -29,4 +29,7 @@ public class User extends  BaseModel{
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
+    private boolean isVerify;
+    @Column(name = "otp")
+    private String otp;
 }

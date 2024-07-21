@@ -28,17 +28,11 @@ public class OrderMapper {
             address = user.getAddress();
         }
         return Order.builder()
-                .orderDate(orderDto.getOrderDate())
-                .original_amount(orderDto.getOriginalAmount())
-                .discountedPrice(orderDto.getDiscountedPrice())
                 .address(address)
                 .note(orderDto.getNote())
-                .deliveryAmount(orderDto.getDeliveryAmount())
                 .buyerName(orderDto.getBuyerName())
                 .phone(orderDto.getPhone())
                 .paymentMethod(orderDto.getPaymentMethod())
-                .status(orderDto.getStatus())
-                .discountedAmount(orderDto.getDiscountedAmount())
                 .deliveryMethod(orderDto.getDeliveryMethod())
                 .user(user)
                 .build();

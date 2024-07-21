@@ -1,19 +1,24 @@
 package com.example.shop.service.impls;
 
-import com.example.shop.dto.requests.CreateUpdateUserDto;
+import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.models.User;
+import com.example.shop.models.UserDetail;
+import com.example.shop.repositories.UserRepository;
 import com.example.shop.service.interfaces.UserService;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserServiceImpl extends BaseServiceImpl<User, Long> implements UserService {
-    public UserServiceImpl(JpaRepository<User, Long> repository) {
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(JpaRepository<User, Long> repository, UserRepository userRepository) {
         super(repository);
+        this.userRepository = userRepository;
     }
 
 
@@ -34,4 +39,10 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements User
     }
 
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(()-> new UsernameNotFoundException("Email not found"));
+        return new UserDetail(user);
+    }
 }

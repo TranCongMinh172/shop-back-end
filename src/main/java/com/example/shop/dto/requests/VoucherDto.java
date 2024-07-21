@@ -7,9 +7,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Value;
+import org.hibernate.validator.constraints.Range;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -26,8 +28,7 @@ public class VoucherDto  {
     private Double minPrice;
 
     @NotNull(message = "Discount must not be null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Discount must be greater than 0")
-    @DecimalMax(value = "100.0", inclusive = true, message = "Discount must be less than or equal to 100")
+    @Range(min = 0 , max = 1,message = "discount ....")
     private Double discount;
 
     @NotNull(message = "Voucher type must not be null")
@@ -35,9 +36,10 @@ public class VoucherDto  {
 
     @NotNull(message = "Expired date must not be null")
     @Future(message = "Expired date must be in the future")
-    private LocalDate expiredDate;
+    private LocalDateTime expiredDate;
 
     @NotNull(message = "Quantity must not be null")
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
+    private ScopeType scope;
 }

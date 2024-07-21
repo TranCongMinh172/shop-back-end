@@ -1,10 +1,12 @@
 package com.example.shop.service.interfaces;
 
-import com.example.shop.dto.requests.CreateUpdateUserDto;
+
 import com.example.shop.models.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
 
 import java.util.Map;
 
-public interface UserService extends BaseService<User,Long> {
+public interface UserService extends BaseService<User,Long> , UserDetailsService {
     Map<String, Object> extractAddressData(Map<String, ?> data);
 }

@@ -22,11 +22,10 @@ public class OrderController {
 
     @PostMapping()
     public ResponseSuccess<?> createOrder(@RequestBody @Valid OrderDto orderDto) throws DataNotFoundException {
-        Order order=orderMapper.addOrderDto2Order(orderDto);
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),
                 "Create a order successfully",
-                orderService.save(order)
+                orderService.save(orderDto)
         );
     }
 
