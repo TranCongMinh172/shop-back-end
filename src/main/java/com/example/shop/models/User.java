@@ -32,4 +32,5 @@ public class User extends  BaseModel{
     private boolean isVerify;
     @Column(name = "otp")
     private String otp;
+    private String otpResetPassword;
 }

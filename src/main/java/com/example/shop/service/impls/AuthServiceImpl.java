@@ -1,6 +1,7 @@
 package com.example.shop.service.impls;
 
 import com.example.shop.dto.requests.LoginRequestDto;
+import com.example.shop.dto.requests.ResetPasswordRequest;
 import com.example.shop.dto.requests.UserRegisterDto;
 import com.example.shop.dto.requests.VerifyEmailDto;
 import com.example.shop.dto.responses.LoginResponse;
@@ -78,6 +79,8 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+
+
     @Override
     public LoginResponse login(LoginRequestDto loginRequestDto) throws DataNotFoundException {
         User user = userRepository.findByEmail(loginRequestDto.getEmail())
@@ -95,6 +98,64 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(token.getAccessToken())
                 .refreshToken(token.getRefreshToken())
                 .build();
+    }
+
+    @Override
+    public void sendVerificationEmail(String email) throws DataNotFoundException, MessagingException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()-> new DataNotFoundException("email not exits"));
+        user.setOtpResetPassword(getOtp());
+        userRepository.save(user);
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setSubject("Mã xác nhận otp đặt lại mật khẩu");
+        emailDetails.setMsgBody(user.getOtpResetPassword());
+        emailDetails.setRecipient(user.getEmail());
+        emailService.sendHtmlMail(emailDetails);
+
+    }
+
+    @Override
+    public void verificationEmailForResetPassword(VerifyEmailDto verifyEmailDto) throws DataNotFoundException {
+        User user = userRepository.findByEmail(verifyEmailDto.getEmail())
+                .orElseThrow(()-> new DataNotFoundException("email not exits"));
+        if(verifyEmailDto.getOtp().equals(user.getOtpResetPassword())){
+            user.setVerify(true);
+            userRepository.save(user);
+        }else {
+            throw new DataNotFoundException("OTP is not correct");
+        }
+    }
+
+    @Override
+    public LoginResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws DataNotFoundException {
+        User user = userRepository.findByEmail(resetPasswordRequest.getEmail())
+                .orElseThrow(()-> new  DataNotFoundException("email not exist"));
+        if(user.getOtpResetPassword() != null &&
+            user.getOtpResetPassword().equals(resetPasswordRequest.getOtpResetPassword())
+        ){
+            user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
+            user.setOtpResetPassword(null);
+            userRepository.save(user);
+            List<Token> tokens = tokenRepository.findAllByUserOrderByExpiredDateDesc(user);
+           if(!tokens.isEmpty()){
+               tokenRepository.deleteAll(tokens);
+           }
+           UserDetail userDetail = new UserDetail(user);
+           Token token = Token.builder()
+                   .accessToken(jwtService.generateJwtToken(userDetail))
+                   .refreshToken(jwtService.generateRefreshToken(new HashMap<>(),userDetail))
+                   .expiredDate(LocalDateTime.now())
+                   .user(user)
+                   .build();
+           tokenRepository.save(token);
+           return LoginResponse.builder()
+                   .accessToken(token.getAccessToken())
+                   .refreshToken(token.getRefreshToken())
+                   .build();
+        }
+        else {
+            throw new DataNotFoundException("OTP is not correct");
+        }
     }
 
     private User mapToUser(UserRegisterDto userRegisterDto) throws  DataExistsException {
