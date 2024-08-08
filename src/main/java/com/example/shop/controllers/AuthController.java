@@ -38,6 +38,16 @@ public class AuthController {
 
         );
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseSuccess<?> refreshToken(@RequestBody String refreshToken)
+            throws Exception{
+        return new ResponseSuccess<>(
+                HttpStatus.OK.value(),
+                "refresh token successfully",
+                authService.refreshToken(refreshToken)
+        );
+    }
     @PostMapping("/verify-email")
     public ResponseSuccess<?> verifyEmail(@RequestBody VerifyEmailDto verifyEmailDto) throws Exception {
         return new ResponseSuccess<>(

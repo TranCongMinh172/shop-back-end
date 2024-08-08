@@ -18,4 +18,7 @@ public class Category {
     private Long id;
     private String categoryName;
     private Status status;
+    public Category(long l) {
+        this.id = l;
+    }
 }

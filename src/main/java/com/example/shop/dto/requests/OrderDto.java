@@ -15,7 +15,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
 public class OrderDto {
 //    @NotNull(message = "Order date must not be null")
 //    private Date orderDate;
@@ -34,6 +33,7 @@ public class OrderDto {
     @NotNull(message = "Delivery method must not be null")
     private DeliveryMethod deliveryMethod;
     private Long userId;
+    private String email;
     private CreateAddressDto createAddressDto;
     private List<ProductOrderDto> productOrderDtos;
     private List<Long> vouchers;

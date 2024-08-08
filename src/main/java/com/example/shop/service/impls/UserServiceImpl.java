@@ -38,6 +38,12 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements User
         return addressData;
     }
 
+    @Override
+    public User findByEmail(String email) throws DataNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new DataNotFoundException("user not found"));
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

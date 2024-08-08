@@ -23,4 +23,8 @@ public class Provider {
     @JoinColumn(name = "address_id")
     private Address address;
     private Status status;
+
+    public Provider(long l) {
+        this.id = l;
+    }
 }

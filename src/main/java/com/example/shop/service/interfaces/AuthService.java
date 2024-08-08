@@ -13,6 +13,7 @@ public interface AuthService {
     void register(UserRegisterDto userRegisterDto) throws DataExistsException, MessagingException;
     LoginResponse login(LoginRequestDto loginRequestDto) throws DataNotFoundException;
     LoginResponse verifyEmail(VerifyEmailDto verifyEmailDto) throws DataNotFoundException;
+    LoginResponse refreshToken(String refreshToken) throws DataNotFoundException;
     void sendVerificationEmail(String email) throws DataNotFoundException, MessagingException;
     void verificationEmailForResetPassword(VerifyEmailDto verifyEmailDto) throws DataNotFoundException;
     LoginResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws DataNotFoundException;

@@ -7,7 +7,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 public class ProductOrderDto {
     @NotNull(message = "product id must be not null")
     private Long productDetailId;

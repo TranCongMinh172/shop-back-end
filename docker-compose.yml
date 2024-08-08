@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    container_name: postgres-db
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      PG_DATA: /data/postgres
+      POSTGRES_DB: shopDb
+    volumes:
+      - postgres:/data/postgres
+    networks:
+      - sales-app-network
+    restart: unless-stopped
+  postgres-admin:
+    container_name: postgres-admin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - sales-app-network
+    restart: unless-stopped
+  redis-container:
+    container_name: redis-container
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - sales-app-network
+
+networks:
+  sales-app-network:
+    driver: bridge
+volumes:
+  postgres:
+  pgadmin:
+
+
+# run service: docker-compose -f docker-compose.yml up -d container_name
+# run all: docker-compose up -d

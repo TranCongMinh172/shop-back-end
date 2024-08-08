@@ -20,4 +20,8 @@ public class Size {
     private Integer numberSize;
     private String textSize;
     private SizeType sizeType;
+
+    public Size(long l) {
+        this.id = l;
+    }
 }

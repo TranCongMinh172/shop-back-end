@@ -157,7 +157,27 @@ public class AuthServiceImpl implements AuthService {
             throw new DataNotFoundException("OTP is not correct");
         }
     }
+    @Override
+    public LoginResponse refreshToken(String refreshToken) throws DataNotFoundException {
+        Token token = tokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new DataNotFoundException("refreshToken is not exist"));
+        String email = jwtService.extractEmail(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new DataNotFoundException("user not found"));
+        UserDetail userDetail = new UserDetail(user);
+        if(!jwtService.validateRefreshToken(refreshToken, userDetail)) {
+            tokenRepository.delete(token);
+            throw new DataNotFoundException("refresh token is incorrect");
+        }
+        token.setAccessToken(jwtService.generateJwtToken(userDetail));
+        token.setExpiredDate(LocalDateTime.now());
+        tokenRepository.save(token);
 
+        return LoginResponse.builder()
+                .accessToken(token.getAccessToken())
+                .refreshToken(refreshToken)
+                .build();
+    }
     private User mapToUser(UserRegisterDto userRegisterDto) throws  DataExistsException {
         Optional<User> user = userRepository.findByEmail(userRegisterDto.getEmail());
         User userExists = new User();
@@ -173,7 +193,7 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(userRegisterDto.getPassword()))
                 .phone(userRegisterDto.getPhoneNumber())
                 .userName(userRegisterDto.getName())
-                .roles(Role.USER)
+                .roles(Role.ROLE_USER)
                 .otp(otpCode)
                 .build();
         userRs.setUserId(userExists.getUserId());

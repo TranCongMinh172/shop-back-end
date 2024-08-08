@@ -116,54 +116,56 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, String> implements 
         originalAmount = handleAmount(productOrderDtos, order, originalAmount);
 
         List<Long> vouchers = orderDto.getVouchers();
-        for (Long voucherId : vouchers) {
-            Voucher voucher = voucherRepository.findById(voucherId)
-                    .orElseThrow(() -> new DataNotFoundException("voucher not found"));
-            UserVoucherId userVoucherId = new UserVoucherId(
-                    user, voucher
-            );
-            if (voucher.getScope().equals(ScopeType.FOR_USER)) {
-                UserVoucher userVoucher = userVoucherRepository.findById(userVoucherId)
-                        .orElseThrow(() -> new DataNotFoundException("userVoucher not found"));
-                if (!userVoucher.isVoucherUsed()) {
+        if (vouchers != null) {
+            for (Long voucherId : vouchers) {
+                Voucher voucher = voucherRepository.findById(voucherId)
+                        .orElseThrow(() -> new DataNotFoundException("voucher not found"));
+                UserVoucherId userVoucherId = new UserVoucherId(
+                        user, voucher
+                );
+                if (voucher.getScope().equals(ScopeType.FOR_USER)) {
+                    UserVoucher userVoucher = userVoucherRepository.findById(userVoucherId)
+                            .orElseThrow(() -> new DataNotFoundException("userVoucher not found"));
+                    if (!userVoucher.isVoucherUsed()) {
+                        double discountPrice = addVoucherDeliveryToOrder(originalAmount, voucher);
+                        if (discountPrice > 0) {
+                            userVoucher.setVoucherUsed(true);
+                        }
+                        if (voucher.getType().equals(VoucherType.FOR_DELIVERY)) {
+                            order.setDeliveryAmount(order.getDeliveryAmount() - discountPrice);
+                        } else {
+                            order.setDeliveryAmount(
+                                    (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice())
+                                            + discountPrice
+                            );
+                        }
+                        if (discountPrice > 0) {
+                            VoucherUsages voucherUsages1 = new VoucherUsages();
+                            voucherUsages1.setVoucher(voucher);
+                            voucherUsages1.setUser(user);
+                            voucherUsages1.setUsagesDate(LocalDateTime.now());
+                            voucherUsagesRepository.save(voucherUsages1);
+                        }
+                        userVoucherRepository.save(userVoucher);
+                    }
+                } else {
+                    Optional<VoucherUsages> voucherUsages = voucherUsagesRepository.findById(userVoucherId);
                     double discountPrice = addVoucherDeliveryToOrder(originalAmount, voucher);
-                    if (discountPrice > 0) {
-                        userVoucher.setVoucherUsed(true);
-                    }
-                    if (voucher.getType().equals(VoucherType.FOR_DELIVERY)) {
-                        order.setDeliveryAmount(order.getDeliveryAmount() - discountPrice);
-                    } else {
-                        order.setDeliveryAmount(
-                                (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice())
-                                        + discountPrice
-                        );
-                    }
-                    if (discountPrice > 0) {
-                        VoucherUsages voucherUsages1 = new VoucherUsages();
-                        voucherUsages1.setVoucher(voucher);
-                        voucherUsages1.setUser(user);
-                        voucherUsages1.setUsagesDate(LocalDateTime.now());
-                        voucherUsagesRepository.save(voucherUsages1);
-                    }
-                    userVoucherRepository.save(userVoucher);
-                }
-            } else {
-                Optional<VoucherUsages> voucherUsages = voucherUsagesRepository.findById(userVoucherId);
-                double discountPrice = addVoucherDeliveryToOrder(originalAmount, voucher);
-                if (voucherUsages.isEmpty()) {
-                    if (voucher.getType().equals(VoucherType.FOR_DELIVERY)) {
-                        order.setDeliveryAmount(order.getDeliveryAmount() - discountPrice);
-                    } else {
-                        order.setDiscountedPrice(
-                                (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice())
-                                        + discountPrice);
-                    }
-                    if (discountPrice > 0) {
-                        VoucherUsages voucherUsages1 = new VoucherUsages();
-                        voucherUsages1.setVoucher(voucher);
-                        voucherUsages1.setUser(user);
-                        voucherUsages1.setUsagesDate(LocalDateTime.now());
-                        voucherUsagesRepository.save(voucherUsages1);
+                    if (voucherUsages.isEmpty()) {
+                        if (voucher.getType().equals(VoucherType.FOR_DELIVERY)) {
+                            order.setDeliveryAmount(order.getDeliveryAmount() - discountPrice);
+                        } else {
+                            order.setDiscountedPrice(
+                                    (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice())
+                                            + discountPrice);
+                        }
+                        if (discountPrice > 0) {
+                            VoucherUsages voucherUsages1 = new VoucherUsages();
+                            voucherUsages1.setVoucher(voucher);
+                            voucherUsages1.setUser(user);
+                            voucherUsages1.setUsagesDate(LocalDateTime.now());
+                            voucherUsagesRepository.save(voucherUsages1);
+                        }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.example.shop.configurations;
 
+import com.example.shop.oauth2.Oauth2SuccessLogin;
 import com.example.shop.service.interfaces.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final UserService userService;
     private final PreFilter preFilter;
+    private final Oauth2SuccessLogin oauth2SuccessLogin;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,7 +42,7 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(author ->{
                     author.requestMatchers("/api/v1/test/admin").hasRole("ADMIN");
-                    author.requestMatchers("/api/v1/test/user").hasRole("USER");
+                    author.requestMatchers("/api/v1/test/users").hasRole("USER");
                     author.requestMatchers("/v3/api-docs/**",
                             "/swagger-ui/**",
                             "/swagger-ui.html").permitAll();
@@ -56,8 +58,10 @@ public class SecurityConfig {
                     author.requestMatchers(HttpMethod.PATCH,"/api/v1/products/**").hasRole("USER");
                     author.requestMatchers(HttpMethod.PUT,"/api/v1/products/**").hasRole("USER");
                     author.requestMatchers(HttpMethod.POST, "api/v1/orders").authenticated();
+                    author.requestMatchers("/api/v1/users/**", "/api/v1/comments/**").authenticated();
                     author.anyRequest().hasRole("ADMIN");
                 })
+                .oauth2Login(oauth2 -> oauth2.successHandler(oauth2SuccessLogin))
                 .sessionManagement(httpSessionManager->
                         httpSessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

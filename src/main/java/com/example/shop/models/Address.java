@@ -18,4 +18,10 @@ public class Address {
     private String street;
     private String city;
     private String district;
+
+    public Address(String s, String state, String city) {
+        this.street = s;
+        this.city = city;
+        this.district = state;
+    }
 }

@@ -17,6 +17,7 @@ public class Product  extends BaseModel{
     @Column(name = "product_id")
     private Long id;
     private String productName;
+    @Column(columnDefinition = "text")
     private String productDescription;
     private Double productPrice;
     private String thumbnail;
@@ -24,7 +25,7 @@ public class Product  extends BaseModel{
     private Integer totalQuantity;
     private Status status;
     private Integer numberOfRating;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "category_id")
     private Category category;
     @ManyToOne
