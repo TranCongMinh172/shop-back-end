@@ -31,4 +31,6 @@ public class Product  extends BaseModel{
     @ManyToOne
     @JoinColumn(name = "provider_id")
     private Provider  provider;
+    @Column(name = "buy_quantity")
+    private Integer buyQuantity;
 }

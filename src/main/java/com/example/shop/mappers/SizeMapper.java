@@ -1,6 +1,6 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.SizeDto;
+import com.example.shop.dtos.requests.SizeDto;
 import com.example.shop.models.Size;
 import org.springframework.stereotype.Component;
 

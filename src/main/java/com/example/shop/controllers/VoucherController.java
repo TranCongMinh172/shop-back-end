@@ -1,10 +1,10 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.VoucherDto;
+import com.example.shop.dtos.requests.VoucherDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.VoucherMapper;
 import com.example.shop.models.Voucher;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.VoucherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class VoucherController {
 
     @PostMapping()
     public ResponseSuccess<?> createVoucher(@RequestBody @Valid VoucherDto voucherDto) {
-        Voucher voucher = voucherMapper.addVoucherDto(voucherDto);
+        Voucher voucher = voucherMapper.voucherDto2Voucher(voucherDto);
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),
                 "Create a voucher successfully",
@@ -40,7 +40,7 @@ public class VoucherController {
     }
     @PutMapping("/{id}")
     public ResponseSuccess<?> updateVoucher(@PathVariable Long id, @RequestBody @Valid VoucherDto  voucherDto){
-        Voucher voucher = voucherMapper.addVoucherDto(voucherDto);
+        Voucher voucher = voucherMapper.voucherDto2Voucher(voucherDto);
         voucher.setId(id);
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),

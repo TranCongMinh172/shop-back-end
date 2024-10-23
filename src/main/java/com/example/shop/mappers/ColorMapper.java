@@ -1,9 +1,8 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.ColorDto;
+import com.example.shop.dtos.requests.ColorDto;
 import com.example.shop.models.Color;
 import com.example.shop.service.interfaces.ColorService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

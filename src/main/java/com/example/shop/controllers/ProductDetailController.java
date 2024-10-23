@@ -1,6 +1,6 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.ProductDetailDto;
+import com.example.shop.dtos.requests.ProductDetailDto;
 import com.example.shop.exceptions.DataExistsException;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.ProductDetailMapper;
@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 
 import java.util.Map;
 

@@ -5,6 +5,7 @@ import com.example.shop.models.Color;
 import com.example.shop.models.Product;
 import com.example.shop.models.ProductDetail;
 import com.example.shop.models.Size;
+import com.example.shop.repositories.BaseRepository;
 import com.example.shop.repositories.ProductDetailRepository;
 import com.example.shop.repositories.ProductRepository;
 import com.example.shop.service.interfaces.ProductDetailService;
@@ -18,8 +19,8 @@ import org.springframework.stereotype.Service;
 public class ProductDetailServiceImpl extends BaseServiceImpl<ProductDetail,Long> implements ProductDetailService {
     private ProductDetailRepository productDetailRepository;
     private ProductRepository productRepository;
-    public ProductDetailServiceImpl(JpaRepository<ProductDetail, Long> repository) {
-        super(repository);
+    public ProductDetailServiceImpl(BaseRepository<ProductDetail, Long> repository) {
+        super(repository,ProductDetail.class);
     }
     @Autowired
     public void setProductDetailRepository(ProductDetailRepository productDetailRepository) {

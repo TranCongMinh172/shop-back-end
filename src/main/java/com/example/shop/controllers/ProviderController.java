@@ -1,10 +1,10 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.CreateProviderDto;
+import com.example.shop.dtos.requests.CreateProviderDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.ProviderMapper;
 import com.example.shop.models.Provider;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.ProviderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

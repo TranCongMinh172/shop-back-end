@@ -1,7 +1,7 @@
 package com.example.shop.oauth2;
 
 
-import com.example.shop.dto.responses.LoginResponse;
+import com.example.shop.dtos.responses.LoginResponse;
 import com.example.shop.models.Token;
 import com.example.shop.models.User;
 import com.example.shop.models.UserDetail;
@@ -9,10 +9,6 @@ import com.example.shop.models.enums.Role;
 import com.example.shop.repositories.UserRepository;
 import com.example.shop.service.interfaces.JwtService;
 import com.example.shop.service.interfaces.TokenService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +23,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -49,10 +44,10 @@ public class Oauth2SuccessLogin implements AuthenticationSuccessHandler {
         OAuth2AuthenticationToken oAuth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
         String registrationId = oAuth2AuthenticationToken.getAuthorizedClientRegistrationId();
         User user = new User();
-        user.setPhone("");
+        user.setPhoneNumber("");
         user.setVerify(true);
         user.setPassword("");
-        user.setRoles(Role.ROLE_USER);
+        user.setRole(Role.ROLE_USER);
         switch (registrationId) {
             case "facebook": {
                 FacebookAccount facebookAccount = new FacebookAccount(
@@ -61,7 +56,7 @@ public class Oauth2SuccessLogin implements AuthenticationSuccessHandler {
                         Objects.requireNonNull(principal.getAttribute("email")).toString()
                 );
                 user.setEmail(facebookAccount.getEmail());
-                user.setUserName(facebookAccount.getName());
+                user.setName(facebookAccount.getName());
                 user.setFacebookAccountId(facebookAccount.getAccountId());
                 break;
             }
@@ -73,7 +68,7 @@ public class Oauth2SuccessLogin implements AuthenticationSuccessHandler {
                         Objects.requireNonNull(principal.getAttribute("picture")).toString()
                 );
                 user.setEmail(googleAccount.getEmail());
-                user.setUserName(googleAccount.getName());
+                user.setName(googleAccount.getName());
                 user.setGoogleAccountId(googleAccount.getAccountId());
                 user.setAvatarUrl(googleAccount.getPictureUrl());
                 break;

@@ -1,8 +1,10 @@
 package com.example.shop.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -23,7 +25,11 @@ public class Comment extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-    private Date commentDate;
+    @Column(name = "comment_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime commentDate;
+    @Column(name = "text_content", columnDefinition = "text")
     private String textContent;
-    private Double rating;
+    private Float rating;
 }

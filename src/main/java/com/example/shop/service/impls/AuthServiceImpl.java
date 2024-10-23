@@ -1,10 +1,10 @@
 package com.example.shop.service.impls;
 
-import com.example.shop.dto.requests.LoginRequestDto;
-import com.example.shop.dto.requests.ResetPasswordRequest;
-import com.example.shop.dto.requests.UserRegisterDto;
-import com.example.shop.dto.requests.VerifyEmailDto;
-import com.example.shop.dto.responses.LoginResponse;
+import com.example.shop.dtos.requests.LoginRequestDto;
+import com.example.shop.dtos.requests.ResetPasswordRequest;
+import com.example.shop.dtos.requests.UserRegisterDto;
+import com.example.shop.dtos.requests.VerifyEmailDto;
+import com.example.shop.dtos.responses.LoginResponse;
 import com.example.shop.exceptions.DataExistsException;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.models.Token;
@@ -59,26 +59,25 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse verifyEmail(VerifyEmailDto verifyEmailDto) throws DataNotFoundException {
         User user = userRepository.findByEmail(verifyEmailDto.getEmail())
-                .orElseThrow(()-> new DataNotFoundException("email not exists"));
-        if(user.getOtp().equals(verifyEmailDto.getOtp())){
+                .orElseThrow(() -> new DataNotFoundException("email not exists"));
+        if (user.getOtp().equals(verifyEmailDto.getOtp())) {
             user.setVerify(true);
             userRepository.save(user);
-        }else {
+        } else {
             throw new DataNotFoundException("OTP is not correct");
         }
         UserDetail userDetail = new UserDetail(user);
         Token newToken = new Token();
-            newToken.setAccessToken(jwtService.generateJwtToken(userDetail));
-            newToken.setRefreshToken(jwtService.generateRefreshToken(new HashMap<>(),userDetail));
-            newToken.setExpiredDate(LocalDateTime.now()); // ngay tAO
-            newToken.setUser(user);
-            saveToken(user,newToken);
+        newToken.setAccessToken(jwtService.generateJwtToken(userDetail));
+        newToken.setRefreshToken(jwtService.generateRefreshToken(new HashMap<>(), userDetail));
+        newToken.setExpiredDate(LocalDateTime.now()); // ngay tAO
+        newToken.setUser(user);
+        saveToken(user, newToken);
         return LoginResponse.builder()
                 .accessToken(newToken.getAccessToken())
                 .refreshToken(newToken.getRefreshToken())
                 .build();
     }
-
 
 
     @Override
@@ -91,9 +90,9 @@ public class AuthServiceImpl implements AuthService {
         Token token = new Token();
         token.setUser(user);
         token.setAccessToken(jwtService.generateJwtToken(userDetail));
-        token.setRefreshToken(jwtService.generateRefreshToken(new HashMap<>(),userDetail));
+        token.setRefreshToken(jwtService.generateRefreshToken(new HashMap<>(), userDetail));
         token.setExpiredDate(LocalDateTime.now());
-        saveToken(user,token);
+        saveToken(user, token);
         return LoginResponse.builder()
                 .accessToken(token.getAccessToken())
                 .refreshToken(token.getRefreshToken())
@@ -103,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void sendVerificationEmail(String email) throws DataNotFoundException, MessagingException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(()-> new DataNotFoundException("email not exits"));
+                .orElseThrow(() -> new DataNotFoundException("email not exits"));
         user.setOtpResetPassword(getOtp());
         userRepository.save(user);
         EmailDetails emailDetails = new EmailDetails();
@@ -117,11 +116,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void verificationEmailForResetPassword(VerifyEmailDto verifyEmailDto) throws DataNotFoundException {
         User user = userRepository.findByEmail(verifyEmailDto.getEmail())
-                .orElseThrow(()-> new DataNotFoundException("email not exits"));
-        if(verifyEmailDto.getOtp().equals(user.getOtpResetPassword())){
+                .orElseThrow(() -> new DataNotFoundException("email not exits"));
+        if (verifyEmailDto.getOtp().equals(user.getOtpResetPassword())) {
             user.setVerify(true);
             userRepository.save(user);
-        }else {
+        } else {
             throw new DataNotFoundException("OTP is not correct");
         }
     }
@@ -129,34 +128,34 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws DataNotFoundException {
         User user = userRepository.findByEmail(resetPasswordRequest.getEmail())
-                .orElseThrow(()-> new  DataNotFoundException("email not exist"));
-        if(user.getOtpResetPassword() != null &&
-            user.getOtpResetPassword().equals(resetPasswordRequest.getOtpResetPassword())
-        ){
+                .orElseThrow(() -> new DataNotFoundException("email not exist"));
+        if (user.getOtpResetPassword() != null &&
+                user.getOtpResetPassword().equals(resetPasswordRequest.getOtpResetPassword())
+        ) {
             user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
             user.setOtpResetPassword(null);
             userRepository.save(user);
             List<Token> tokens = tokenRepository.findAllByUserOrderByExpiredDateDesc(user);
-           if(!tokens.isEmpty()){
-               tokenRepository.deleteAll(tokens);
-           }
-           UserDetail userDetail = new UserDetail(user);
-           Token token = Token.builder()
-                   .accessToken(jwtService.generateJwtToken(userDetail))
-                   .refreshToken(jwtService.generateRefreshToken(new HashMap<>(),userDetail))
-                   .expiredDate(LocalDateTime.now())
-                   .user(user)
-                   .build();
-           tokenRepository.save(token);
-           return LoginResponse.builder()
-                   .accessToken(token.getAccessToken())
-                   .refreshToken(token.getRefreshToken())
-                   .build();
-        }
-        else {
+            if (!tokens.isEmpty()) {
+                tokenRepository.deleteAll(tokens);
+            }
+            UserDetail userDetail = new UserDetail(user);
+            Token token = Token.builder()
+                    .accessToken(jwtService.generateJwtToken(userDetail))
+                    .refreshToken(jwtService.generateRefreshToken(new HashMap<>(), userDetail))
+                    .expiredDate(LocalDateTime.now())
+                    .user(user)
+                    .build();
+            tokenRepository.save(token);
+            return LoginResponse.builder()
+                    .accessToken(token.getAccessToken())
+                    .refreshToken(token.getRefreshToken())
+                    .build();
+        } else {
             throw new DataNotFoundException("OTP is not correct");
         }
     }
+
     @Override
     public LoginResponse refreshToken(String refreshToken) throws DataNotFoundException {
         Token token = tokenRepository.findByRefreshToken(refreshToken)
@@ -165,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new DataNotFoundException("user not found"));
         UserDetail userDetail = new UserDetail(user);
-        if(!jwtService.validateRefreshToken(refreshToken, userDetail)) {
+        if (!jwtService.validateRefreshToken(refreshToken, userDetail)) {
             tokenRepository.delete(token);
             throw new DataNotFoundException("refresh token is incorrect");
         }
@@ -178,36 +177,39 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .build();
     }
-    private User mapToUser(UserRegisterDto userRegisterDto) throws  DataExistsException {
+
+    private User mapToUser(UserRegisterDto userRegisterDto) throws DataExistsException {
         Optional<User> user = userRepository.findByEmail(userRegisterDto.getEmail());
         User userExists = new User();
-        if(user.isPresent()){
-            if(user.get().isVerify()){
-                throw new DataExistsException("Email already exists");
+        if (user.isPresent()) {
+            if (user.get().isVerify()) {
+                throw new DataExistsException("email already exists");
             }
             userExists = user.get();
         }
-        String otpCode = getOtp();
-        User userRs =  User.builder()
+        String otp = getOtp();
+        User userRs = User.builder()
                 .email(userRegisterDto.getEmail())
                 .password(passwordEncoder.encode(userRegisterDto.getPassword()))
-                .phone(userRegisterDto.getPhoneNumber())
-                .userName(userRegisterDto.getName())
-                .roles(Role.ROLE_USER)
-                .otp(otpCode)
+                .name(userRegisterDto.getName())
+                .role(Role.ROLE_USER)
+                .otp(otp)
+                .phoneNumber(userRegisterDto.getPhoneNumber())
                 .build();
-        userRs.setUserId(userExists.getUserId());
+        userRs.setId(userExists.getId());
         return userRs;
     }
+
     private String getOtp() {
         Random random = new Random();
         int randomNumber = 100000 + random.nextInt(900000);
         return String.valueOf(randomNumber);
     }
-    private void saveToken(User user, Token token){
+
+    private void saveToken(User user, Token token) {
         List<Token> tokens = tokenRepository.findAllByUserOrderByExpiredDateDesc(user);
-        if(!tokens.isEmpty() && tokens.size()>=2){
-            Token tokenDelete = tokens.get(tokens.size()-1);
+        if (!tokens.isEmpty() && tokens.size() >= 2) {
+            Token tokenDelete = tokens.get(tokens.size() - 1);
             tokenRepository.delete(tokenDelete);
         }
         tokenRepository.save(token);

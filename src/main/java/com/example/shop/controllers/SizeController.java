@@ -1,10 +1,10 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.SizeDto;
+import com.example.shop.dtos.requests.SizeDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.SizeMapper;
 import com.example.shop.models.Size;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.SizeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

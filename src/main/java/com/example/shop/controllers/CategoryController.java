@@ -2,11 +2,11 @@ package com.example.shop.controllers;
 
 
 
-import com.example.shop.dto.requests.CategoryDto;
+import com.example.shop.dtos.requests.CategoryDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.CategoryMapper;
 import com.example.shop.models.Category;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

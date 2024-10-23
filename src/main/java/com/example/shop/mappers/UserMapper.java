@@ -1,6 +1,6 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.CreateUpdateUserDto;
+import com.example.shop.dtos.requests.CreateUpdateUserDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.models.User;
 import com.example.shop.service.interfaces.UserService;
@@ -14,25 +14,25 @@ public class UserMapper {
     private final UserService userService;
     public User addUserDto2User(CreateUpdateUserDto createUpdateUserDto){
         return User.builder()
-                .userName(createUpdateUserDto.getUserName())
-                .phone(createUpdateUserDto.getPhone())
+                .name(createUpdateUserDto.getUserName())
+                .phoneNumber(createUpdateUserDto.getPhone())
                 .email(createUpdateUserDto.getEmail())
                 .password(createUpdateUserDto.getPassword())
-                .genders(createUpdateUserDto.getGenders())
+                .gender(createUpdateUserDto.getGenders())
                 .dateOfBirth(createUpdateUserDto.getDateOfBirth())
-                .roles(createUpdateUserDto.getRoles())
+                .role(createUpdateUserDto.getRoles())
                 .address(addressMapper.addressDto2Address(createUpdateUserDto.getAddress()))
                 .build();
     }
     public User updateUserDto2User(Long id,CreateUpdateUserDto createUpdateUserDto) throws DataNotFoundException {
         User user = userService.findById(id).orElseThrow(()-> new DataNotFoundException("User not found"));
-            user.setUserName(createUpdateUserDto.getUserName());
-            user.setPhone(createUpdateUserDto.getPhone());
+            user.setName(createUpdateUserDto.getUserName());
+            user.setPhoneNumber(createUpdateUserDto.getPhone());
             user.setEmail(createUpdateUserDto.getEmail());
             user.setPassword(createUpdateUserDto.getPassword());
-            user.setGenders(createUpdateUserDto.getGenders());
+            user.setGender(createUpdateUserDto.getGenders());
             user.setDateOfBirth(createUpdateUserDto.getDateOfBirth());
-            user.setRoles(createUpdateUserDto.getRoles());
+            user.setRole(createUpdateUserDto.getRoles());
         return user;
     }
 

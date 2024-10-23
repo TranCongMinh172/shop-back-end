@@ -1,11 +1,11 @@
 package com.example.shop.controllers;
 
 
-import com.example.shop.dto.requests.CreateUpdateUserDto;
+import com.example.shop.dtos.requests.CreateUpdateUserDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.UserMapper;
 import com.example.shop.models.User;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.AddressService;
 import com.example.shop.service.interfaces.UserService;
 import jakarta.validation.Valid;

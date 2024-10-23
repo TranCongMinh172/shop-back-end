@@ -1,20 +1,22 @@
 package com.example.shop.service.impls;
 
-import com.example.shop.dto.requests.ProductDto;
-import com.example.shop.dto.responses.ProductResponse;
+import com.example.shop.dtos.requests.ProductDto;
+import com.example.shop.dtos.responses.PageResponse;
+import com.example.shop.dtos.responses.product.ProductResponse;
 import com.example.shop.exceptions.DataExistsException;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.ProductMapper;
 import com.example.shop.models.Product;
 import com.example.shop.models.ProductDetail;
 import com.example.shop.models.ProductImage;
+import com.example.shop.repositories.BaseRepository;
 import com.example.shop.repositories.ProductDetailRepository;
 import com.example.shop.repositories.ProductImageRepository;
 import com.example.shop.repositories.ProductRepository;
+import com.example.shop.repositories.customizations.ProductQuery;
 import com.example.shop.service.interfaces.ProductService;
 import com.example.shop.utils.S3Upload;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,37 +24,28 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-
+@Slf4j
 @Service
 public class ProductServiceImpl extends BaseServiceImpl<Product,Long> implements ProductService {
-    private ProductMapper productMapper;
-    private ProductRepository productRepository;
-    private ProductImageRepository productImageRepository;
-    private S3Upload s3Upload;
-    private ProductDetailRepository productDetailRepository;
-    public ProductServiceImpl(JpaRepository<Product, Long> repository) {
-        super(repository);
-    }
-
-    @Autowired
-    public void setProductMapper(ProductMapper productMapper) {
+    private final ProductMapper productMapper;
+    private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
+    private final S3Upload s3Upload;
+    private final ProductDetailRepository productDetailRepository;
+    private final ProductQuery productQuery;
+    public ProductServiceImpl(BaseRepository<Product, Long> repository, ProductMapper productMapper,
+                              ProductRepository productRepository,
+                              ProductImageRepository productImageRepository,
+                              S3Upload s3Upload,
+                              ProductDetailRepository productDetailRepository,
+                              ProductQuery productQuery) {
+        super(repository, Product.class);
         this.productMapper = productMapper;
-    }
-    @Autowired
-    public void setProductRepository(ProductRepository productRepository) {
         this.productRepository = productRepository;
-    }
-    @Autowired
-    public void setProductImageRepository(ProductImageRepository productImageRepository) {
         this.productImageRepository = productImageRepository;
-    }
-    @Autowired
-    public void setS3Upload(S3Upload s3Upload) {
         this.s3Upload = s3Upload;
-    }
-    @Autowired
-    public void setProductDetailRepository(ProductDetailRepository productDetailRepository) {
         this.productDetailRepository = productDetailRepository;
+        this.productQuery = productQuery;
     }
 
     @Override
@@ -98,6 +91,16 @@ public class ProductServiceImpl extends BaseServiceImpl<Product,Long> implements
                 .productDetails(productDetails)
                 .productImages(productImages)
                 .build();
+    }
+
+    @Override
+    public PageResponse<?> getProductForUserRole(int pageNo, int pageSize, String[] search, String[] sort) {
+        return productQuery.getPageData(pageNo, pageSize, search, sort);
+    }
+
+    @Override
+    public PageResponse<?> getProductSale(int pageNo, int pageSize, String[] search, String[] sort) {
+        return productQuery.getPageDataPromotion(pageNo, pageSize, search, sort);
     }
 
 }

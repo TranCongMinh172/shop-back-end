@@ -1,6 +1,6 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.CategoryDto;
+import com.example.shop.dtos.requests.CategoryDto;
 import com.example.shop.models.Category;
 import org.springframework.stereotype.Component;
 

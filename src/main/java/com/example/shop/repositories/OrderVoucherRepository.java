@@ -4,5 +4,8 @@ import com.example.shop.models.OrderVoucher;
 import com.example.shop.models.idClass.OrderVoucherId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderVoucherRepository extends JpaRepository<OrderVoucher, OrderVoucherId> {
+import java.util.List;
+
+public interface OrderVoucherRepository extends BaseRepository<OrderVoucher, OrderVoucherId> {
+    List<OrderVoucher> findAllByOrderId(String id);
 }

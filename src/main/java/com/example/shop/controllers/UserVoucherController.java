@@ -1,11 +1,11 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.UserVoucherDto;
+import com.example.shop.dtos.requests.UserVoucherDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.UserVoucherMapper;
 import com.example.shop.models.UserVoucher;
 import com.example.shop.models.idClass.UserVoucherId;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.UserVoucherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class UserVoucherController {
 
     @PostMapping()
     public ResponseSuccess<?> createUserVoucher(@RequestBody @Valid UserVoucherDto voucherDto) throws DataNotFoundException {
-        UserVoucher userVoucher = userVoucherMapper.addUserVoucherDto(voucherDto);
+        UserVoucher userVoucher = userVoucherMapper.userVoucherDto2UserVoucher(voucherDto);
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),
                 "Create a user_voucher successfully",
@@ -31,7 +31,7 @@ public class UserVoucherController {
 
     @PutMapping("/{id}")
     public ResponseSuccess<?> updateUserVoucher(@RequestBody @Valid UserVoucherDto voucherDto) throws DataNotFoundException {
-        UserVoucher userVoucher = userVoucherMapper.addUserVoucherDto(voucherDto);
+        UserVoucher userVoucher = userVoucherMapper.userVoucherDto2UserVoucher(voucherDto);
         UserVoucherId userVoucherId = new UserVoucherId(voucherDto.getUserId(),voucherDto.getVoucherId());
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),

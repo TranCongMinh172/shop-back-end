@@ -1,10 +1,10 @@
 package com.example.shop.service.interfaces;
 
-import com.example.shop.dto.requests.LoginRequestDto;
-import com.example.shop.dto.requests.ResetPasswordRequest;
-import com.example.shop.dto.requests.UserRegisterDto;
-import com.example.shop.dto.requests.VerifyEmailDto;
-import com.example.shop.dto.responses.LoginResponse;
+import com.example.shop.dtos.requests.LoginRequestDto;
+import com.example.shop.dtos.requests.ResetPasswordRequest;
+import com.example.shop.dtos.requests.UserRegisterDto;
+import com.example.shop.dtos.requests.VerifyEmailDto;
+import com.example.shop.dtos.responses.LoginResponse;
 import com.example.shop.exceptions.DataExistsException;
 import com.example.shop.exceptions.DataNotFoundException;
 import jakarta.mail.MessagingException;

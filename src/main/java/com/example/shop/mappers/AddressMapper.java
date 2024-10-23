@@ -1,6 +1,6 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.CreateAddressDto;
+import com.example.shop.dtos.requests.CreateAddressDto;
 import com.example.shop.models.Address;
 import org.springframework.stereotype.Component;
 

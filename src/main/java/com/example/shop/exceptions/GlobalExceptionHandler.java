@@ -1,6 +1,6 @@
 package com.example.shop.exceptions;
 
-import com.example.shop.dto.requests.responses.ResponseError;
+import com.example.shop.dtos.requests.responses.ResponseError;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

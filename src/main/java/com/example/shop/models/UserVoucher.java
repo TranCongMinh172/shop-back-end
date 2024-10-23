@@ -21,5 +21,6 @@ public class UserVoucher {
     @ManyToOne
     @JoinColumn(name = "voucher_id")
     private Voucher voucher;
-    private boolean isVoucherUsed;
+    @Column(name = "is_used")
+    private boolean isUsed;
 }

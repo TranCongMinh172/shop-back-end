@@ -14,10 +14,14 @@ import lombok.Setter;
 @Table(name = "rooms_chat")
 public class RoomChat {
     @Id
-    @Column(name = "room_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "room_id", nullable = false)
+    private String roomId;
+    @Column(nullable = false)
+    private String sender;
+    @Column(nullable = false)
+    private String receiver;
+    @Column(name = "is_seen")
     private boolean isSeen;
 }

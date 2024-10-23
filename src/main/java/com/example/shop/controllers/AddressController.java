@@ -1,10 +1,10 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.CreateAddressDto;
+import com.example.shop.dtos.requests.CreateAddressDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.AddressMapper;
 import com.example.shop.models.Address;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

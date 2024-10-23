@@ -1,9 +1,9 @@
 package com.example.shop.controllers;
 
-import com.example.shop.dto.requests.LoginRequestDto;
-import com.example.shop.dto.requests.ResetPasswordRequest;
-import com.example.shop.dto.requests.UserRegisterDto;
-import com.example.shop.dto.requests.VerifyEmailDto;
+import com.example.shop.dtos.requests.LoginRequestDto;
+import com.example.shop.dtos.requests.ResetPasswordRequest;
+import com.example.shop.dtos.requests.UserRegisterDto;
+import com.example.shop.dtos.requests.VerifyEmailDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.service.interfaces.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 
 @RestController
 @RequestMapping("/api/v1/auth")

@@ -1,19 +1,19 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.VoucherDto;
+import com.example.shop.dtos.requests.VoucherDto;
 import com.example.shop.models.Voucher;
 import org.springframework.stereotype.Component;
 
 @Component
 public class VoucherMapper {
-    public Voucher addVoucherDto(VoucherDto voucherDto){
+    public Voucher voucherDto2Voucher(VoucherDto voucherDto) {
         return Voucher.builder()
-                .maxPrice(voucherDto.getMaxPrice())
-                .minAmount(voucherDto.getMinPrice())
+                .voucherType(voucherDto.getVoucherType())
                 .discount(voucherDto.getDiscount())
-                .quantity(voucherDto.getQuantity())
                 .expiredDate(voucherDto.getExpiredDate())
-                .type(voucherDto.getType())
+                .minAmount(voucherDto.getMinAmount())
+                .maxPrice(voucherDto.getMaxPrice())
+                .quantity(voucherDto.getQuantity())
                 .scope(voucherDto.getScope())
                 .build();
     }

@@ -1,20 +1,19 @@
 package com.example.shop.service.impls;
 
-import com.example.shop.dto.requests.OrderDto;
-import com.example.shop.dto.requests.ProductOrderDto;
+import com.example.shop.dtos.requests.OrderDto;
+import com.example.shop.dtos.requests.ProductOrderDto;
+import com.example.shop.dtos.responses.MessageResponse;
 import com.example.shop.exceptions.DataNotFoundException;
+import com.example.shop.exceptions.OutOfInStockException;
 import com.example.shop.mappers.AddressMapper;
 import com.example.shop.models.*;
-import com.example.shop.models.enums.DeliveryMethod;
-import com.example.shop.models.enums.ScopeType;
-import com.example.shop.models.enums.StatusOrder;
-import com.example.shop.models.enums.VoucherType;
+import com.example.shop.models.enums.*;
 import com.example.shop.models.idClass.UserVoucherId;
 import com.example.shop.repositories.*;
 import com.example.shop.service.interfaces.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +37,23 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, String> implements 
     private VoucherRepository voucherRepository;
     private UserVoucherRepository userVoucherRepository;
     private VoucherUsagesRepository voucherUsagesRepository;
+    private final OrderVoucherRepository orderVoucherRepository;
+    private final OrderRepository orderRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserNotificationRepository userNotificationRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public OrderServiceImpl(JpaRepository<Order, String> repository) {
-        super(repository);
+    public OrderServiceImpl(BaseRepository<Order, String> repository,
+                            OrderVoucherRepository orderVoucherRepository,
+                            OrderRepository orderRepository,
+                            NotificationRepository notificationRepository,
+                            UserNotificationRepository userNotificationRepository, SimpMessagingTemplate messagingTemplate) {
+        super(repository,Order.class);
+        this.orderVoucherRepository = orderVoucherRepository;
+        this.orderRepository = orderRepository;
+        this.notificationRepository = notificationRepository;
+        this.userNotificationRepository = userNotificationRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Autowired
@@ -89,92 +102,175 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, String> implements 
     }
 
     @Override
-    @Transactional(rollbackFor = {DataNotFoundException.class})
-    public Order save(OrderDto orderDto) throws DataNotFoundException {
-        List<ProductOrderDto> productOrderDtos = orderDto.getProductOrderDtos();
-        User user = userRepository.findById(orderDto.getUserId())
-                .orElseThrow(() -> new DataNotFoundException("user not found"));
+    @Transactional(rollbackFor = {DataNotFoundException.class, OutOfInStockException.class})
+    public Order save(OrderDto orderDto) throws DataNotFoundException, OutOfInStockException {
+        List<ProductOrderDto> productOrders = orderDto.getProductOrders();
+        User user = userRepository.findByEmail(orderDto.getEmail())
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
         double originalAmount = 0;
-        Order order = Order
-                .builder()
+        OrderStatus orderStatus = OrderStatus.PENDING;
+        if(orderDto.getPaymentMethod().equals(PaymentMethod.CC)) {
+            orderStatus = OrderStatus.UNPAID;
+        }
+        Order order = Order.builder()
                 .id(UUID.randomUUID().toString())
                 .user(user)
                 .orderDate(LocalDateTime.now())
-                .status(StatusOrder.PENDING)
+                .orderStatus(orderStatus)
                 .originalAmount(originalAmount)
                 .paymentMethod(orderDto.getPaymentMethod())
                 .deliveryMethod(orderDto.getDeliveryMethod())
-                .phone(orderDto.getPhone())
+                .phoneNumber(orderDto.getPhoneNumber())
                 .buyerName(orderDto.getBuyerName())
                 .note(orderDto.getNote())
                 .deliveryAmount(
-                        orderDto.getDeliveryMethod().equals(DeliveryMethod.EXPRESS) ? expressPrice : economyPrice
-                )
-                .address(addressMapper.addressDto2Address(orderDto.getCreateAddressDto()))
+                        orderDto.getDeliveryMethod().equals(DeliveryMethod.EXPRESS) ? expressPrice : economyPrice)
+                .address(addressMapper.addressDto2Address(orderDto.getAddress()))
                 .build();
         order = super.save(order);
-        originalAmount = handleAmount(productOrderDtos, order, originalAmount);
+        originalAmount = handleAmount(productOrders, order, originalAmount);
 
         List<Long> vouchers = orderDto.getVouchers();
-        if (vouchers != null) {
+        if(vouchers != null) {
             for (Long voucherId : vouchers) {
                 Voucher voucher = voucherRepository.findById(voucherId)
-                        .orElseThrow(() -> new DataNotFoundException("voucher not found"));
+                        .orElseThrow(() -> new DataNotFoundException("Voucher not found"));
                 UserVoucherId userVoucherId = new UserVoucherId(
                         user, voucher
                 );
-                if (voucher.getScope().equals(ScopeType.FOR_USER)) {
+                if(voucher.getScope().equals(Scope.FOR_USER)) {
                     UserVoucher userVoucher = userVoucherRepository.findById(userVoucherId)
-                            .orElseThrow(() -> new DataNotFoundException("userVoucher not found"));
-                    if (!userVoucher.isVoucherUsed()) {
+                            .orElseThrow(() -> new DataNotFoundException("UserVoucher not found"));
+                    if(!userVoucher.isUsed()) {
                         double discountPrice = addVoucherDeliveryToOrder(originalAmount, voucher);
-                        if (discountPrice > 0) {
-                            userVoucher.setVoucherUsed(true);
+                        if(discountPrice > 0) {
+                            userVoucher.setUsed(true);
                         }
-                        if (voucher.getType().equals(VoucherType.FOR_DELIVERY)) {
-                            order.setDeliveryAmount(order.getDeliveryAmount() - discountPrice);
+                        if(voucher.getVoucherType().equals(VoucherType.FOR_DELIVERY)) {
+                            double discount = order.getDeliveryAmount() - discountPrice;
+                            if(discount < 0) {
+                                discount = 0;
+                            }
+                            order.setDeliveryAmount(discount);
                         } else {
-                            order.setDeliveryAmount(
+                            order.setDiscountedPrice(
                                     (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice())
-                                            + discountPrice
-                            );
-                        }
-                        if (discountPrice > 0) {
-                            VoucherUsages voucherUsages1 = new VoucherUsages();
-                            voucherUsages1.setVoucher(voucher);
-                            voucherUsages1.setUser(user);
-                            voucherUsages1.setUsagesDate(LocalDateTime.now());
-                            voucherUsagesRepository.save(voucherUsages1);
+                                            + discountPrice);
+
                         }
                         userVoucherRepository.save(userVoucher);
+                        OrderVoucher orderVoucher = new OrderVoucher();
+                        orderVoucher.setOrder(order);
+                        orderVoucher.setVoucher(voucher);
+                        orderVoucherRepository.save(orderVoucher);
                     }
                 } else {
                     Optional<VoucherUsages> voucherUsages = voucherUsagesRepository.findById(userVoucherId);
                     double discountPrice = addVoucherDeliveryToOrder(originalAmount, voucher);
-                    if (voucherUsages.isEmpty()) {
-                        if (voucher.getType().equals(VoucherType.FOR_DELIVERY)) {
-                            order.setDeliveryAmount(order.getDeliveryAmount() - discountPrice);
+                    if(voucherUsages.isEmpty()) {
+                        if(voucher.getVoucherType().equals(VoucherType.FOR_DELIVERY)) {
+                            double discount = order.getDeliveryAmount() - discountPrice;
+                            if(discount < 0) {
+                                discount = 0;
+                            }
+                            order.setDeliveryAmount(discount);
                         } else {
                             order.setDiscountedPrice(
                                     (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice())
                                             + discountPrice);
                         }
-                        if (discountPrice > 0) {
+                        if(discountPrice > 0) {
                             VoucherUsages voucherUsages1 = new VoucherUsages();
                             voucherUsages1.setVoucher(voucher);
                             voucherUsages1.setUser(user);
                             voucherUsages1.setUsagesDate(LocalDateTime.now());
                             voucherUsagesRepository.save(voucherUsages1);
+                            OrderVoucher orderVoucher = new OrderVoucher();
+                            orderVoucher.setOrder(order);
+                            orderVoucher.setVoucher(voucher);
+                            orderVoucherRepository.save(orderVoucher);
                         }
                     }
+
                 }
             }
         }
-        order.setDiscountedAmount((originalAmount + order.getDeliveryAmount()) // gia cuoi cung
+
+        order.setDiscountedAmount((originalAmount + order.getDeliveryAmount())
                 - (order.getDiscountedPrice() == null ? 0 : order.getDiscountedPrice()));
         order.setOriginalAmount(originalAmount);
         return super.save(order);
+    }
 
+    @Override
+    public Order updateStatusOrder(String id, OrderStatus status) throws DataNotFoundException {
+        if(!status.equals(OrderStatus.PAID)) {
+            Order order = orderRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Order not found"));
+            order.setOrderStatus(status);
+            orderRepository.save(order);
+            switch (status) {
+                case PROCESSING:
+                    handleNotification(order, "Đơn hàng " + order.getId() + " đã được xác nhận");
+                    break;
+                case SHIPPED:
+                    handleNotification(order, "Đơn hàng " + order.getId() + " đã được giao");
+                    break;
+                case CANCELLED:
+                    List<OrderVoucher> orderVouchers = orderVoucherRepository.findAllByOrderId(order.getId());
+                    for(OrderVoucher orderVoucher : orderVouchers) {
+                        Voucher voucher = orderVoucher.getVoucher();
+                        if(voucher.getScope().equals(Scope.FOR_USER)) {
+                            UserVoucher userVoucher = userVoucherRepository.findById(
+                                    new UserVoucherId(order.getUser(), voucher)
+                            ).orElseThrow(() -> new DataNotFoundException("UserVoucher not found"));
+                            userVoucher.setUsed(false);
+                            userVoucherRepository.save(userVoucher);
+                        } else {
+                            VoucherUsages voucherUsages = voucherUsagesRepository.findById(
+                                    new UserVoucherId(order.getUser(), voucher)
+                            ).orElseThrow(() -> new DataNotFoundException("UserVoucherUsages not found"));
+                            voucherUsagesRepository.delete(voucherUsages);
+                        }
+                    }
+                    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(order.getId());
+                    for(OrderDetail orderDetail : orderDetails) {
+                        ProductDetail productDetail = orderDetail.getProductDetail();
+                        productDetail.setQuantity(productDetail.getQuantity() + orderDetail.getQuantity());
+                        productDetailRepository.save(productDetail);
+                        Product product = productDetail.getProduct();
+                        product.setBuyQuantity(product.getBuyQuantity() - orderDetail.getQuantity());
+                        product.setTotalQuantity(product.getTotalQuantity() + orderDetail.getQuantity());
+                        productDetailRepository.save(productDetail);
+                    }
+
+                    break;
+                default: break;
+            }
+            return order;
+        }
+        return null;
+    }
+    private void handleNotification(Order order, String text) {
+        Notification notification = new Notification();
+        notification.setContent(text);
+        notification.setScope(Scope.FOR_USER);
+        notification.setNotificationDate(LocalDateTime.now());
+        notification.setRedirectTo("/orders/" + order.getId());
+        notificationRepository.save(notification);
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(order.getUser());
+        userNotification.setNotification(notification);
+        userNotification.setSeen(false);
+        userNotificationRepository.save(userNotification);
+        MessageResponse<Notification> messageResponse = new MessageResponse<>();
+        messageResponse.setData(notification);
+        messageResponse.setType("notification");
+        messagingTemplate.convertAndSendToUser(order.getUser().getEmail(),
+                "/queue/notifications", messageResponse);
+    }
+    @Override
+    public List<OrderDetail> getOrderDetailsByOrderId(String orderId) {
+        return orderDetailRepository.findByOrderId(orderId);
     }
 
     private double addVoucherDeliveryToOrder(double originalAmount, Voucher voucher) {
@@ -201,6 +297,8 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, String> implements 
             }
             productDetail.setQuantity(quantity);
             product.setTotalQuantity(product.getTotalQuantity() - productOrderDto.getQuantity());
+            int buyQuantity = product.getBuyQuantity() != null ? product.getBuyQuantity() : 0;
+            product.setBuyQuantity(buyQuantity + productOrderDto.getQuantity());
             productDetailRepository.save(productDetail);
             productRepository.save(product);
             List<ProductPrice> productPrices = productPriceRepository.findAllByProductId(product.getId());

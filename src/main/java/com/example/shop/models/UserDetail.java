@@ -15,7 +15,7 @@ public class UserDetail implements UserDetails {
     public UserDetail(User user) {
         this.email = user.getEmail();
         this.password = user.getPassword();
-        this.authorities = List.of(new SimpleGrantedAuthority(user.getRoles().name()));
+        this.authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
         this.verify = user.isVerify();
     }
 

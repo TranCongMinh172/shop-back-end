@@ -3,6 +3,7 @@ package com.example.shop.service.impls;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.models.User;
 import com.example.shop.models.UserDetail;
+import com.example.shop.repositories.BaseRepository;
 import com.example.shop.repositories.UserRepository;
 import com.example.shop.service.interfaces.UserService;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,8 +17,8 @@ import java.util.*;
 public class UserServiceImpl extends BaseServiceImpl<User, Long> implements UserService {
     private final UserRepository userRepository;
 
-    public UserServiceImpl(JpaRepository<User, Long> repository, UserRepository userRepository) {
-        super(repository);
+    public UserServiceImpl(BaseRepository<User, Long> repository, UserRepository userRepository) {
+        super(repository, User.class);
         this.userRepository = userRepository;
     }
 

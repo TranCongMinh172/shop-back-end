@@ -1,11 +1,11 @@
 package com.example.shop.controllers;
 
 
-import com.example.shop.dto.requests.ProductDto;
+import com.example.shop.dtos.requests.ProductDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.ProductMapper;
 import com.example.shop.models.Product;
-import com.example.shop.dto.requests.responses.ResponseSuccess;
+import com.example.shop.dtos.requests.responses.ResponseSuccess;
 import com.example.shop.service.interfaces.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +36,29 @@ public class ProductController {
                 HttpStatus.OK.value(),
                 "Successfully get all products.",
                 productService.findAll()
+        );
+    }
+
+    @GetMapping("/page-product")
+    public ResponseSuccess<?> pageProduct(@RequestParam(defaultValue = "1") int pageNo,
+                                          @RequestParam(defaultValue = "10") int pageSize,
+                                          @RequestParam(required = false)String[] sort,
+                                          @RequestParam(required = false)String[] search) throws Exception {
+        return new ResponseSuccess<>(
+          HttpStatus.OK.value(),
+                "get product page",
+                productService.getProductForUserRole(pageNo, pageSize,search,sort)
+        );
+    }
+    @GetMapping("/promotion-product")
+    public ResponseSuccess<?> getProductSale(@RequestParam(defaultValue = "1") int pageNo,
+                                          @RequestParam(defaultValue = "10") int pageSize,
+                                          @RequestParam(required = false)String[] sort,
+                                          @RequestParam(required = false)String[] search) throws Exception {
+        return new ResponseSuccess<>(
+                HttpStatus.OK.value(),
+                "get product page",
+                productService.getProductSale(pageNo, pageSize, sort, search)
         );
     }
     @GetMapping("/{id}")

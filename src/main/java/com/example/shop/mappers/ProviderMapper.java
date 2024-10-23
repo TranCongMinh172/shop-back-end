@@ -1,6 +1,6 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.CreateProviderDto;
+import com.example.shop.dtos.requests.CreateProviderDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.models.Provider;
 import com.example.shop.service.interfaces.ProviderService;

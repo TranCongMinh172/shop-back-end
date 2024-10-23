@@ -14,11 +14,13 @@ import lombok.*;
 public class CommentMedia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "media_id")
+    @Column(name = "comment_media_id")
     private Long id;
     private String path;
-    private MediaType type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "media_type")
+    private MediaType mediaType;
     @ManyToOne
-    @JoinColumn(name = "comment_id")
+    @JoinColumn(name = "comment_id", nullable = false)
     private Comment comment;
 }

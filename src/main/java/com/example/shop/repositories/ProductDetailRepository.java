@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
+public interface ProductDetailRepository extends BaseRepository<ProductDetail, Long> {
     boolean existsByColorAndSizeAndProduct(Color color, Size size, Product product);
     List<ProductDetail> findByProductId(Long productId);
 }

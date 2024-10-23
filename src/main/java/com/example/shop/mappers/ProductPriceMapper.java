@@ -1,6 +1,6 @@
 package com.example.shop.mappers;
 
-import com.example.shop.dto.requests.ProductPriceDto;
+import com.example.shop.dtos.requests.ProductPriceDto;
 import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.models.Product;
 import com.example.shop.models.ProductPrice;

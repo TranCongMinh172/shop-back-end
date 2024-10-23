@@ -1,9 +1,10 @@
 package com.example.shop.configurations;
 
-import com.example.shop.dto.requests.CreateAddressDto;
-import com.example.shop.dto.requests.OrderDto;
-import com.example.shop.dto.requests.ProductOrderDto;
+import com.example.shop.dtos.requests.CreateAddressDto;
+import com.example.shop.dtos.requests.OrderDto;
+import com.example.shop.dtos.requests.ProductOrderDto;
 import com.example.shop.exceptions.DataNotFoundException;
+import com.example.shop.exceptions.OutOfInStockException;
 import com.example.shop.models.*;
 import com.example.shop.models.enums.*;
 import com.example.shop.repositories.*;
@@ -13,14 +14,12 @@ import com.example.shop.service.impls.ProductServiceImpl;
 import lombok.RequiredArgsConstructor;
 import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 public class FakeData {
 
@@ -38,35 +37,37 @@ public class FakeData {
     private final ProductDetailServiceImpl productDetailServiceImpl;
     private final OrderServiceImpl orderServiceImpl;
 
-    @Bean
+//    @Bean
     public CommandLineRunner commandLineRunner() {
         return args -> {
             Faker faker = new Faker();
             Random random = new Random();
-            List<User> users = userRepository.findAll();
-//            List<User> users = fakerUser(faker);
-//            fakeCategory();
-//            fakeProvider(faker);
-//            fakeColor();
-//            fakeSize();
-//            fakeProduct(faker, random);
+//            List<User> users = userRepository.findAll();
+            List<User> users = fakeUser(faker);
+            fakeCategory();
+            fakeProvider(faker);
+            fakeColor();
+            fakeSize();
+            fakeProduct(faker, random);
 //            fakeComment(faker, users, random);
-            fakeOrder(faker, users, random);
+//            fakeOrder(faker, users, random);
         };
     };
 
-    public List<User> fakerUser(Faker faker) {
+    private List<User> fakeUser(Faker faker) {
         List<User> users = new ArrayList<>();
-        for(int i = 0; i < 200; i++) {
+        for (int i = 0; i < 200; i++) {
             User user = new User();
-            user.setAddress(new Address(faker.address().streetAddress(),faker.address().state(),faker.address().city()));
+            user.setAddress(new Address(faker.address().streetAddress(),
+                    faker.address().state(),
+                    faker.address().city()));
             user.setEmail(faker.internet().emailAddress());
             user.setPassword(passwordEncoder.encode("123456"));
             user.setVerify(true);
-            user.setPhone(faker.phoneNumber().subscriberNumber(10));
-            user.setGenders(faker.options().option(Gender.class));
-            user.setUserName(faker.name().fullName());
-            user.setRoles(Role.ROLE_USER);
+            user.setPhoneNumber(faker.phoneNumber().subscriberNumber(10));
+            user.setGender(faker.options().option(Gender.class));
+            user.setName(faker.name().fullName());
+            user.setRole(Role.ROLE_USER);
             users.add(userRepository.save(user));
         }
         return users;
@@ -161,7 +162,7 @@ public class FakeData {
         }
     }
     private void fakeOrder(Faker faker, List<User> users, Random random)
-            throws DataNotFoundException {
+            throws DataNotFoundException, OutOfInStockException {
         User[] userArr = users.toArray(new User[0]);
         for (int i = 0; i < 1000; i++) {
             User user = userArr[random.nextInt(userArr.length)];
@@ -171,19 +172,19 @@ public class FakeData {
                     .district(user.getAddress().getDistrict())
                     .build();
             OrderDto orderDto = new OrderDto();
-            orderDto.setCreateAddressDto(addressDto);
-            orderDto.setUserId(user.getUserId());
-            orderDto.setBuyerName(user.getUserName());
-            orderDto.setPhone(user.getPhone());
+            orderDto.setAddress(addressDto);
+            orderDto.setEmail(user.getEmail());
+            orderDto.setBuyerName(user.getName());
+            orderDto.setPhoneNumber(user.getPhoneNumber());
             orderDto.setPaymentMethod(faker.options().option(PaymentMethod.class));
             List<ProductOrderDto> productOrderDtos = new ArrayList<>();
-            for(int j = 0; j <= 4; j++) {
+            for (int j = 0; j <= 4; j++) {
                 ProductOrderDto productOrderDto = new ProductOrderDto();
-                productOrderDto.setProductDetailId(random.nextLong(10000) + 1);
+                productOrderDto.setProductDetailId(random.nextLong(36000) + 1);
                 productOrderDto.setQuantity(random.nextInt(5) + 1);
                 productOrderDtos.add(productOrderDto);
             }
-            orderDto.setProductOrderDtos(productOrderDtos);
+            orderDto.setProductOrders(productOrderDtos);
             orderDto.setNote(faker.coffee().notes());
             orderDto.setDeliveryMethod(faker.options().option(DeliveryMethod.class));
             orderServiceImpl.save(orderDto);
