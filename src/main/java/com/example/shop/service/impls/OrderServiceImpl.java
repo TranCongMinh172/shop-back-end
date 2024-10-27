@@ -302,13 +302,13 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, String> implements 
             productDetailRepository.save(productDetail);
             productRepository.save(product);
             List<ProductPrice> productPrices = productPriceRepository.findAllByProductId(product.getId());
-            double price = product.getProductPrice();
+            double price = product.getPrice();
             double discountedPrice = 0;
             if (!productPrices.isEmpty()) {
                 for (ProductPrice productPrice : productPrices) {
                     if (productPrice.getExpiredDate().isAfter(LocalDateTime.now())) {
-                        if (productPrice.getDiscountPrice() > discountedPrice) {
-                            discountedPrice = productPrice.getDiscountPrice();
+                        if (productPrice.getDiscountedPrice() > discountedPrice) {
+                            discountedPrice = productPrice.getDiscountedPrice();
                         }
                     }
                 }

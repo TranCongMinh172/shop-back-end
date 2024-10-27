@@ -6,6 +6,7 @@ import com.example.shop.exceptions.DataNotFoundException;
 import com.example.shop.mappers.ProductMapper;
 import com.example.shop.models.Product;
 import com.example.shop.dtos.requests.responses.ResponseSuccess;
+import com.example.shop.service.impls.ProductRedisServiceImpl;
 import com.example.shop.service.interfaces.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class ProductController {
     private final ProductService productService;
     private final ProductMapper productMapper;
+    private final ProductRedisServiceImpl productRedisServiceImpl;
 
     @PostMapping()
     public ResponseSuccess<?> createProduct(@ModelAttribute @Valid ProductDto productDto)  throws Exception{
@@ -47,7 +49,7 @@ public class ProductController {
         return new ResponseSuccess<>(
           HttpStatus.OK.value(),
                 "get product page",
-                productService.getProductForUserRole(pageNo, pageSize,search,sort)
+                productService.getProductsForUserRole(pageNo, pageSize,search,sort)
         );
     }
     @GetMapping("/promotion-product")
@@ -58,7 +60,7 @@ public class ProductController {
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),
                 "get product page",
-                productService.getProductSale(pageNo, pageSize, sort, search)
+                productService.getProductsSale(pageNo, pageSize, sort, search)
         );
     }
     @GetMapping("/{id}")
@@ -86,5 +88,9 @@ public class ProductController {
                 "update product with id "+ id +" successfully",
                 productService.updatePatch(id,data)
         );
+    }
+    @GetMapping("/redis")
+    public void  redis() throws DataNotFoundException {
+        productRedisServiceImpl.clearCache();
     }
 }

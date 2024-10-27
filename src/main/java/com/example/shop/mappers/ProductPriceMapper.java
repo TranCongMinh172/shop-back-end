@@ -12,17 +12,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProductPriceMapper {
     private final ProductService productService;
-    public ProductPrice addProductPriceDtoToProductPrice(ProductPriceDto productPriceDto) throws DataNotFoundException {
+    public ProductPrice productPriceDto2ProductPrice(ProductPriceDto productPriceDto)
+            throws DataNotFoundException {
         Product product = productService.findById(productPriceDto.getProductId())
                 .orElseThrow(() -> new DataNotFoundException("Product not found"));
-        Double discountedPrice = product.getProductPrice() * productPriceDto.getDiscount();
-        return ProductPrice
-                .builder()
+        Double discountedPrice = product.getPrice() * productPriceDto.getDiscount();
+        Double discountedAmount = product.getPrice() - discountedPrice;
+        return ProductPrice.builder()
                 .product(product)
-                .discount(productPriceDto.getDiscount())
-                .expiredDate(productPriceDto.getExpiryDate())
-                .discountPrice(discountedPrice)
                 .note(productPriceDto.getNote())
+                .expiredDate(productPriceDto.getExpiryDate())
+                .discount(productPriceDto.getDiscount())
+                .discountedPrice(discountedPrice)
+                .discountedAmount(discountedAmount)
                 .build();
     }
 }

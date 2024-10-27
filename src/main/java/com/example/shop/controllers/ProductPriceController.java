@@ -24,7 +24,7 @@ public class ProductPriceController {
         return new ResponseSuccess<>(
                 HttpStatus.OK.value(),
                 "create a product price successfully",
-                productPriceService.save(productPriceMapper.addProductPriceDtoToProductPrice(productPriceDto))
+                productPriceService.save(productPriceMapper.productPriceDto2ProductPrice(productPriceDto))
         );
     }
 }

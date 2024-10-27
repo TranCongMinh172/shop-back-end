@@ -39,6 +39,7 @@ public class AuthController {
         );
     }
 
+
     @PostMapping("/refresh-token")
     public ResponseSuccess<?> refreshToken(@RequestBody String refreshToken)
             throws Exception{
@@ -54,6 +55,16 @@ public class AuthController {
                 HttpStatus.OK.value(),
                 "verify email successfully",
                 authService.verifyEmail(verifyEmailDto)
+        );
+    }
+    @PostMapping("/verify-reset-password-code")
+    public ResponseSuccess<?> verifyResetPasswordCode(@RequestBody VerifyEmailDto verifyEmailDto)
+            throws Exception{
+        authService.verificationEmailForResetPassword(verifyEmailDto);
+        return new ResponseSuccess<>(
+                HttpStatus.OK.value(),
+                "verify successfully",
+                null
         );
     }
     @PostMapping("/get-verify-code")
@@ -80,6 +91,16 @@ public class AuthController {
                 HttpStatus.OK.value(),
                 "reset password successfully",
                 authService.resetPassword(resetPasswordRequest)
+        );
+    }
+    @PostMapping("/logout")
+    public ResponseSuccess<?> logout(@RequestBody String accessToken)
+            throws Exception {
+        authService.logout(accessToken);
+        return new ResponseSuccess<>(
+                HttpStatus.OK.value(),
+                "logout successfully",
+                null
         );
     }
 }

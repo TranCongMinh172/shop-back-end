@@ -21,7 +21,7 @@ public class User extends  BaseModel{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
-    @Column(nullable = false)
+
     private String name;
     @Column(nullable = false, unique = true)
     private String email;
@@ -31,7 +31,7 @@ public class User extends  BaseModel{
     @Column(nullable = false, name = "phone_number",
             length = 10)
     private String phoneNumber;
-    @Enumerated(EnumType.STRING)
+    @Enumerated()
     private Gender gender;
     @Column(name = "date_of_birth")
     @Temporal(TemporalType.DATE)

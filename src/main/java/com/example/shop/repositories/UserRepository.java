@@ -1,8 +1,7 @@
 package com.example.shop.repositories;
 
-import com.example.shop.exceptions.DataNotFoundException;
+
 import com.example.shop.models.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 

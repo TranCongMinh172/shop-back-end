@@ -25,9 +25,9 @@ public class ProductMapper {
                 .orElseThrow(()-> new DataNotFoundException("provider not found"));
         return Product.builder()
                 .productName(productDto.getProductName())
-                .productPrice(productDto.getProductPrice())
-                .productDescription(productDto.getProductDescription())
-                .status(Status.ACTIVE)
+                .price(productDto.getProductPrice())
+                .description(productDto.getProductDescription())
+                .productStatus(Status.ACTIVE)
                 .category(category)
                 .provider(provider)
                 .build();
@@ -36,9 +36,9 @@ public class ProductMapper {
         Product product = productRepository.findById(id)
                 .orElseThrow(()-> new DataNotFoundException("product not found"));
                 product.setProductName(productDto.getProductName());
-                product.setProductPrice(productDto.getProductPrice());
-                product.setProductDescription(productDto.getProductDescription());
-                product.setStatus(Status.ACTIVE);
+                product.setPrice(productDto.getProductPrice());
+                product.setDescription(productDto.getProductDescription());
+                product.setProductStatus(Status.ACTIVE);
                 return product;
 
     }

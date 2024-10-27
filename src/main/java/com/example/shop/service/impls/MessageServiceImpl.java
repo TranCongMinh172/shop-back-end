@@ -83,6 +83,8 @@ public class MessageServiceImpl extends BaseServiceImpl<Message, String> impleme
 
     private MessageType getMessageType(MultipartFile file) throws MediaTypeNotSupportException {
         String filename = file.getOriginalFilename();
+        Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "png", "gif", "jpeg", "jfif");
+        Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "avi", "mov", "mkv");
         if (filename == null) {
             return MessageType.TEXT;
         }

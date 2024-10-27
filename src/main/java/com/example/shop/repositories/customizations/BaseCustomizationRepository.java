@@ -1,5 +1,4 @@
 package com.example.shop.repositories.customizations;
-
 import com.example.shop.dtos.responses.PageResponse;
 import com.example.shop.models.enums.OrderStatus;
 import com.example.shop.models.enums.Status;
@@ -12,21 +11,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class BaseCustomizationRepository<T> {
+
     @PersistenceContext
-    protected EntityManager em;
+    protected EntityManager entityManager;
+
     protected final Class<T> entityClass;
+
     protected static final Pattern FILTER_PATTERN = Pattern.compile("(.*?)([<>]=?|:|-|!)([^-]*)-?(or)?");
+
     protected static final Pattern SORT_PATTERN = Pattern.compile("(\\w+?)(:)(asc|desc)");
 
     protected BaseCustomizationRepository(Class<T> entityClass) {
         this.entityClass = entityClass;
     }
-    protected PageResponse<?> getPageData(int pageNo, int pageSize, String[] search, String[] sort){
-        String sql = String.format("select o from %s o where 1=1",entityClass.getName());
+
+    protected PageResponse<?> getPageData(int pageNo, int pageSize, String[] search, String[] sort)  {
+        String sql = String.format("select o from %s o where 1=1", entityClass.getName());
         StringBuilder queryBuilder = new StringBuilder(sql);
         appendQueryBuilder(search, queryBuilder, " %s %so.%s%s %s ?%s");
         sortBy(queryBuilder, " order by o.%s %s", sort);
-        Query query = em.createQuery(queryBuilder.toString());
+        Query query = entityManager.createQuery(queryBuilder.toString());
         query.setFirstResult((pageNo - 1) * pageSize);
         query.setMaxResults(pageSize);
         setValueParams(search, query);
@@ -35,10 +39,11 @@ public abstract class BaseCustomizationRepository<T> {
         StringBuilder countQuery = new StringBuilder(sqlCount);
         appendQueryBuilder(search, countQuery, " %s %so.%s%s %s ?%s");
 
-        Query queryCount = em.createQuery(countQuery.toString());
+        Query queryCount = entityManager.createQuery(countQuery.toString());
         setValueParams(search, queryCount);
 
         var data = query.getResultList();
+
         return PageResponse.builder()
                 .data(data)
                 .totalPage((long) Math.ceil(((long) queryCount.getSingleResult() * 1.0) / pageSize))
@@ -47,40 +52,6 @@ public abstract class BaseCustomizationRepository<T> {
                 .build();
     }
 
-    protected void appendQueryBuilder(String[] search, StringBuilder queryBuilder, String queryFormat) {
-        if(search != null) {
-            for(String s : search) {
-                Matcher matcher = FILTER_PATTERN.matcher(s);
-                if(matcher.find()) {
-                    String lower = "";
-                    String lowerClose = "";
-                    if((OperatorQuery.getOperator(matcher.group(2)).equals("like"))) {
-                        lower = "lower(";
-                        lowerClose = ")";
-                    }
-                    String operator = OperatorQuery.getOperator(matcher.group(2));
-                    String format = String.format(queryFormat, matcher.group(4) != null ? "or" : "and",
-                            lower, matcher.group(1), lowerClose, operator,
-                            Arrays.stream(search).toList().indexOf(s) + 1);
-                    queryBuilder.append(format);
-                }
-            }
-        }
-    }
-
-
-    protected void sortBy(StringBuilder queryBuilder, String queryFormat, String... sort) {
-        if (sort != null) {
-            for (String s : sort) {
-                Matcher matcher = SORT_PATTERN.matcher(s);
-
-                if (matcher.find()) {
-                    String sortBy = String.format(queryFormat, matcher.group(1), matcher.group(3));
-                    queryBuilder.append(sortBy);
-                }
-            }
-        }
-    }
     protected void setValueParams(String[] search, Query query) {
         if (search != null) {
             for (String s : search) {
@@ -105,4 +76,39 @@ public abstract class BaseCustomizationRepository<T> {
             }
         }
     }
+
+    protected void sortBy(StringBuilder queryBuilder, String queryFormat, String... sort) {
+        if (sort != null) {
+            for (String s : sort) {
+                Matcher matcher = SORT_PATTERN.matcher(s);
+
+                if (matcher.find()) {
+                    String sortBy = String.format(queryFormat, matcher.group(1), matcher.group(3));
+                    queryBuilder.append(sortBy);
+                }
+            }
+        }
+    }
+
+    protected void appendQueryBuilder(String[] search, StringBuilder queryBuilder, String queryFormat) {
+        if(search != null) {
+            for(String s : search) {
+                Matcher matcher = FILTER_PATTERN.matcher(s);
+                if(matcher.find()) {
+                    String lower = "";
+                    String lowerClose = "";
+                    if((OperatorQuery.getOperator(matcher.group(2)).equals("like"))) {
+                        lower = "lower(";
+                        lowerClose = ")";
+                    }
+                    String operator = OperatorQuery.getOperator(matcher.group(2));
+                    String format = String.format(queryFormat, matcher.group(4) != null ? "or" : "and",
+                            lower, matcher.group(1), lowerClose, operator,
+                            Arrays.stream(search).toList().indexOf(s) + 1);
+                    queryBuilder.append(format);
+                }
+            }
+        }
+    }
+
 }
